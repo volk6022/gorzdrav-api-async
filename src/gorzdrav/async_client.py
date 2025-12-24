@@ -5,7 +5,7 @@ from pydantic import ValidationError
 
 from . import models
 from . import exceptions
-from config import Config
+from ..config import Config
 
 class AsyncGorzdrav:
     """
