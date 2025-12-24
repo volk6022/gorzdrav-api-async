@@ -3,4 +3,5 @@ pydantic
 pydantic_core
 validators
 dnspython
-dotenvs
+fastapi
+uvicorn
