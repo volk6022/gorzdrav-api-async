@@ -218,7 +218,5 @@ if __name__ == "__main__":
     uvicorn.run(
         app, 
         host=Config.HOST,
-        port=Config.PORT,
-        loop="uvloop",
-        http="httptools"
+        port=Config.PORT
     )

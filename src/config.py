@@ -19,6 +19,6 @@ class Config:
     }
     BASE_APPOINTMENT_URL: str = "https://gorzdrav.spb.ru/service-free-schedule#"
     REQUEST_TIMEOUT: float = 30.0
-    HTTP2_ENABLED: bool = True
+    HTTP2_ENABLED: bool = False
     RETRY_INITIAL_DELAY: float = 1.0
     RETRY_ATTEMPTS: int = 3
