@@ -2,11 +2,10 @@ class Config:
     # Server configuration
     HOST = "0.0.0.0"
     PORT = 8000
-    SERVER_WORKERS = 1
     
     # Pool configuration
     POOL_SIZE = 5
-    QUEUE_MAXSIZE = 100
+    QUEUE_MAXSIZE = 1000
 
     # API configuration
     GORZDRAV_API = "https://gorzdrav.spb.ru/_api/api"

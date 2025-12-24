@@ -1,3 +1,4 @@
+from contextlib import asynccontextmanager
 from fastapi import FastAPI, HTTPException
 import uvicorn
 import asyncio
@@ -10,8 +11,30 @@ from src.gorzdrav.exceptions import GorzdravExceptionBase
 import src.gorzdrav.models as models
 from src.config import Config
 
-app = FastAPI(title="Gorzdrav API Proxy", version="0.1.0")
+# Initialize client pool
+pool = None
 
+@asynccontextmanager
+async def lifespan(app: FastAPI):
+    """Lifespan handler for FastAPI app"""
+    global pool
+    
+    # Startup logic
+    print("🚀 Starting application...")
+    pool = ClientPool()
+    await pool.initialize()
+    yield
+    
+    # Shutdown logic
+    print("🛑 Stopping application...")
+    await pool.shutdown()
+
+
+app = FastAPI(
+    title="Gorzdrav API Proxy",
+    version="0.1.0",
+    lifespan=lifespan
+)
 
 class ClientPool:
     """Async client pool with request queue management"""
@@ -70,21 +93,6 @@ class ClientPool:
             task.cancel()
         # Wait for tasks to complete
         await asyncio.gather(*self.worker_tasks, return_exceptions=True)
-
-
-# Initialize client pool
-pool = ClientPool()
-
-
-# ===== FastAPI Event Handlers =====
-@app.on_event("startup")
-async def startup_event():
-    await pool.initialize()
-
-
-@app.on_event("shutdown")
-async def shutdown_event():
-    await pool.shutdown()
 
 
 # ===== Common Response Models =====
@@ -198,7 +206,7 @@ async def parse_gorzdrav_url(url: str):
                 "valid": False,
                 "error": "URL does not contain valid Gorzdrav appointment parameters"
             }
-        return {"valid": True, "result": result}
+        return {"valid": True, "result": result}    
     except Exception as e:
         raise HTTPException(
             status_code=400,
@@ -211,7 +219,6 @@ if __name__ == "__main__":
         app, 
         host=Config.HOST,
         port=Config.PORT,
-        workers=Config.SERVER_WORKERS,
         loop="uvloop",
         http="httptools"
     )
