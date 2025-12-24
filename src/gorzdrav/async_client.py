@@ -3,13 +3,13 @@ import httpx
 from typing import Any, Optional
 from pydantic import ValidationError
 
-import models
+from . import models
 from . import exceptions
 from config import Config
 
 class AsyncGorzdrav:
     """
-    Async API client for Gorzdrav.spb.ru using httpx
+    Async API client for Gorzdrav.spb.ru
     """
     def __init__(self, headers: Optional[dict] = None):
         self.api_url = Config.API_URL
@@ -18,8 +18,8 @@ class AsyncGorzdrav:
         self.headers = headers or Config.HEADERS
         self.client = httpx.AsyncClient(
             headers=self.headers,
-            timeout=30.0,
-            http2=True
+            timeout=Config.REQUEST_TIMEOUT,
+            http2=Config.HTTP2_ENABLED
         )
 
     async def __aenter__(self):
@@ -35,16 +35,16 @@ class AsyncGorzdrav:
         specialtyId: str,
         scheduleId: str,
     ) -> str:
-        """URL generator (remains unchanged)"""
-        base_link = "https://gorzdrav.spb.ru/service-free-schedule#"
+        """URL generator"""
+        base_link = Config.BASE_APPOINTMENT_URL
         addon = f"""%5B%7B%22district%22:%22{districtId}%22%7D,%7B%22lpu%22:%22{lpuId}%22%7D,%7B%22speciality%22:%22{specialtyId}%22%7D,%7B%22schedule%22:%22{scheduleId}%22%7D,%7B%22doctor%22:%22{scheduleId}%22%7D%5D"""
         return base_link + addon
 
     async def __get_result(
         self,
         url: str,
-        sleep_time: float = 1.0,
-        attempts: int = 3
+        sleep_time: float = Config.RETRY_INITIAL_DELAY,
+        attempts: int = Config.RETRY_ATTEMPTS
     ) -> Any:
         """
         Async request handler with retry logic
