@@ -1,20 +1,9 @@
 import asyncio
 import httpx
-from datetime import datetime
 from typing import Any, Optional
 from pydantic import ValidationError
 
-from .models import (
-    ApiResponse,
-    ApiDistrict,
-    ApiLPU,
-    ApiSpecialty,
-    ApiDoctor,
-    ApiAppointment,
-    ApiTimetable,
-    Doctor,
-    LinkParsingResult
-)
+import models
 from . import exceptions
 from config import Config
 
@@ -69,7 +58,7 @@ class AsyncGorzdrav:
                 response.raise_for_status()
                 response_json = response.json()
                 
-                api_response = ApiResponse(**response_json)
+                api_response = models.ApiResponse(**response_json)
                 if not api_response.success:
                     raise exceptions.GorzdravException(
                         message=api_response.message,
@@ -104,13 +93,13 @@ class AsyncGorzdrav:
         """Parse list of results into Pydantic models"""
         return [model(**result) for result in objects]
     
-    async def get_districts(self) -> list[ApiDistrict]:
+    async def get_districts(self) -> list[models.ApiDistrict]:
         """Get all districts"""
         url = f"{self.shared_url}/districts"
         result = await self.__get_result(url)
-        return self.__parse_list_in_result(result, ApiDistrict)
+        return self.__parse_list_in_result(result, models.ApiDistrict)
 
-    async def get_lpus(self, districtId: Optional[str] = None) -> list[ApiLPU]:
+    async def get_lpus(self, districtId: Optional[str] = None) -> list[models.ApiLPU]:
         """Get medical institutions (LPUs)"""
         if districtId:
             url = f"{self.shared_url}/district/{districtId}/lpus"
@@ -118,29 +107,29 @@ class AsyncGorzdrav:
             url = f"{self.shared_url}/lpus"
         
         result = await self.__get_result(url)
-        return self.__parse_list_in_result(result, ApiLPU)
+        return self.__parse_list_in_result(result, models.ApiLPU)
 
-    async def get_lpu(self, lpuId: int) -> ApiLPU:
+    async def get_lpu(self, lpuId: int) -> models.ApiLPU:
         """Get specific medical institution"""
         url = f"{self.shared_url}/lpu/{lpuId}"
         result = await self.__get_result(url)
-        return ApiLPU(**result)
+        return models.ApiLPU(**result)
 
-    async def get_specialties(self, lpuId: int) -> list[ApiSpecialty]:
+    async def get_specialties(self, lpuId: int) -> list[models.ApiSpecialty]:
         """Get specialties for an institution"""
         url = f"{self.schedule_url}/lpu/{lpuId}/specialties"
         try:
             result = await self.__get_result(url)
-            return self.__parse_list_in_result(result, ApiSpecialty)
+            return self.__parse_list_in_result(result, models.ApiSpecialty)
         except exceptions.NoSpecialtiesException:
             return []
 
-    async def get_doctors(self, lpuId: int, specialtyId: str) -> list[ApiDoctor]:
+    async def get_doctors(self, lpuId: int, specialtyId: str) -> list[models.ApiDoctor]:
         """Get doctors by specialty"""
         url = f"{self.schedule_url}/lpu/{lpuId}/speciality/{specialtyId}/doctors"
         try:
             result = await self.__get_result(url)
-            return self.__parse_list_in_result(result, ApiDoctor)
+            return self.__parse_list_in_result(result, models.ApiDoctor)
         except exceptions.NoDoctorsException:
             return []
 
@@ -150,12 +139,12 @@ class AsyncGorzdrav:
         specialtyId: str,
         doctorId: str,
         districtId: Optional[str] = None
-    ) -> Optional[Doctor]:
+    ) -> Optional[models.Doctor]:
         """Get specific doctor"""
         doctors = await self.get_doctors(lpuId, specialtyId)
         for doctor in doctors:
             if doctor.id == doctorId:
-                return Doctor(
+                return models.Doctor(
                     **doctor.model_dump(),
                     districtId=districtId,
                     lpuId=lpuId,
@@ -163,17 +152,17 @@ class AsyncGorzdrav:
                 )
         return None
 
-    async def get_timetables(self, lpu_id: int, doctor_id: str) -> list[ApiTimetable]:
+    async def get_timetables(self, lpu_id: int, doctor_id: str) -> list[models.ApiTimetable]:
         """Get doctor's timetable"""
         url = f"{self.schedule_url}/lpu/{lpu_id}/doctor/{doctor_id}/timetable"
         result = await self.__get_result(url)
-        return self.__parse_list_in_result(result, ApiTimetable)
+        return self.__parse_list_in_result(result, models.ApiTimetable)
 
-    async def get_appointments(self, lpu_id: int, doctor_id: str) -> list[ApiAppointment]:
+    async def get_appointments(self, lpu_id: int, doctor_id: str) -> list[models.ApiAppointment]:
         """Get available appointments"""
         url = f"{self.schedule_url}/lpu/{lpu_id}/doctor/{doctor_id}/appointments"
         try:
             result = await self.__get_result(url)
-            return self.__parse_list_in_result(result, ApiAppointment)
+            return self.__parse_list_in_result(result, models.ApiAppointment)
         except exceptions.NoTicketsException:
             return []

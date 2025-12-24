@@ -3,4 +3,4 @@ pydantic
 pydantic_core
 validators
 dnspython
-dotenv
+dotenvs
