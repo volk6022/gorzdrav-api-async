@@ -5,3 +5,4 @@ validators
 dnspython
 fastapi
 uvicorn
+aiocache

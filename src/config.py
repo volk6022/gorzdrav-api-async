@@ -7,6 +7,9 @@ class Config:
     POOL_SIZE = 5
     QUEUE_MAXSIZE = 1000
 
+    # Cache
+    CACHE_TTL = 3600  # 1 hour cache duration
+
     # API configuration
     GORZDRAV_API = "https://gorzdrav.spb.ru/_api/api"
     GORZDRAV_API_V = "v2"
