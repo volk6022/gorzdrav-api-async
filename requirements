@@ -1,0 +1,6 @@
+httpx
+pydantic
+pydantic_core
+validators
+dnspython
+dotenv

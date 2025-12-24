@@ -3,8 +3,8 @@ import json
 from urllib.parse import unquote
 from pydantic_core import ValidationError
 
-import validators  # pip3 install validators
-import dns.resolver  # pip3 install dnspython
+import validators
+import dns.resolver
 from .models import LinkParsingResult
 
 
