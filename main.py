@@ -2,10 +2,12 @@ from contextlib import asynccontextmanager
 from fastapi import FastAPI, HTTPException
 import uvicorn
 import asyncio
+import json
 from typing import Dict, Any, Optional, Callable, Awaitable, List
 from pydantic import BaseModel
 from aiocache import Cache
 from aiocache.serializers import JsonSerializer
+from datetime import datetime, date
 
 # Importing your existing components
 from src.gorzdrav.async_client import AsyncGorzdrav
@@ -17,10 +19,36 @@ from src.config import Config
 pool = None
 cache = None
 
+
+# class PydanticJsonSerializer(JsonSerializer):
+#     """Custom serializer that handles Pydantic models"""
+#     def dumps(self, value):
+#         from pydantic import BaseModel
+#         def default_converter(o):
+#             if isinstance(o, BaseModel):
+#                 return o.model_dump()
+#             raise TypeError(f"Object of type {o.__class__.__name__} is not JSON serializable")
+#         return json.dumps(value, default=default_converter)
+
+class PydanticJsonSerializer(JsonSerializer):
+    """Custom serializer that handles Pydantic models and datetime/date"""
+    def dumps(self, value):
+        from pydantic import BaseModel
+        
+        def default_converter(o):
+            if isinstance(o, BaseModel):
+                return o.model_dump()
+            elif isinstance(o, (datetime, date)):
+                return o.isoformat()
+            raise TypeError(f"Object of type {o.__class__.__name__} is not JSON serializable")
+            
+        return json.dumps(value, default=default_converter)
+
+
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     """Lifespan handler for FastAPI app"""
-    global pool
+    global pool, cache
     
     # Startup logic
     print("🚀 Starting application...")
@@ -29,11 +57,12 @@ async def lifespan(app: FastAPI):
 
     cache = Cache(
         Cache.MEMORY,
-        serializer=JsonSerializer(),
+        # serializer=JsonSerializer(),
+        serializer=PydanticJsonSerializer(),
         ttl=Config.CACHE_TTL,
         namespace="gorzdrav"
     )
-    await cache.init()
+    # await cache.init()
 
     yield
     

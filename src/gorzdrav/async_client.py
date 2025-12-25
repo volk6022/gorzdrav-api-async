@@ -7,6 +7,7 @@ from . import models
 from . import exceptions
 from ..config import Config
 
+
 class AsyncGorzdrav:
     """
     Async API client for Gorzdrav.spb.ru
