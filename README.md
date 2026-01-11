@@ -176,6 +176,17 @@ Example Response:
 }
 ```
 
+### 7. Generate Appointment Link
+```bash
+curl "http://localhost:8000/generate-link?district_id=5&lpu_id=3&specialty_id=49351&doctor_id=2229"
+```
+```bash
+{
+  "url": "https://gorzdrav.spb.ru/service-free-schedule#%5B%7B%22district%22:%225%22%7D,%7B%22lpu%22:%223%22%7D,%7B%22speciality%22:%2249351%22%7D,%7B%22schedule%22:%222229%22%7D,%7B%22doctor%22:%222229%22%7D%5D"
+}
+```
+
+
 ### Python Client Example
 ```python
 import httpx

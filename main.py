@@ -179,6 +179,11 @@ async def cached_handler(
     return result
 
 
+class AppointmentLinkResponse(BaseModel):
+    """Response model for generated appointment links"""
+    url: str
+
+
 # ===== API Endpoints =====
 
 
@@ -288,6 +293,32 @@ async def get_appointments(lpu_id: int, doctor_id: str):
         raise HTTPException(
             status_code=400,
             detail={"error": "API Error", "code": e.errorCode, "detail": e.message}
+        )
+
+
+@app.get("/generate-link",
+         response_model=AppointmentLinkResponse,
+         responses={400: {"model": ErrorResponse}})
+async def generate_appointment_link(
+    district_id: str,
+    lpu_id: int,
+    specialty_id: str,
+    doctor_id: str
+):
+    """Generate direct appointment URL for booking"""
+    try:
+        return {
+            "url": AsyncGorzdrav.generate_link(
+                districtId=district_id,
+                lpuId=lpu_id,
+                specialtyId=specialty_id,
+                scheduleId=doctor_id  # Doctor ID serves as schedule ID in URLs
+            )
+        }
+    except Exception as e:
+        raise HTTPException(
+            status_code=400,
+            detail={"error": "URL Generation Error", "detail": str(e)}
         )
 
 
