@@ -81,40 +81,81 @@ Example Response:
 ]
 ```
 
-#### 2. Get LPUs in District
+#### 2. Get LPUs
+```bash
+curl "http://localhost:8000/lpus"
+```
+
+Or get LPUs in District
 ```bash
 curl "http://localhost:8000/lpus?district_id=5"
 ```
 
 Example Response:
 ```json
+[
+  {
+    "id": 3,
+    "address": "198261, Санкт-Петербург, ул. Генерала Симоняка, д. 6",
+    "lpuFullName": "СПб ГБУЗ \"Городская поликлиника №88\""
+  }
+]
 ```
 
 #### 3. Get Specialties in LPU
 ```bash
-curl "http://localhost:8000/specialties?lpu_id=42"
+curl "http://localhost:8000/specialties?lpu_id=3"
 ```
 
 Example Response:
 ```json
+[
+  {
+    "id": "49351",
+    "name": "Терапия",
+    "countFreeParticipant": 504,
+    "countFreeTicket": 504,
+    "lastDate": "2026-01-16T19:30:00",
+    "nearestDate": "2026-01-12T08:00:00"
+  }
+]
 ```
 
 #### 4. Get Doctors by Specialty
 ```bash
-curl "http://localhost:8000/doctors?lpu_id=42&specialty_id=8"
+curl "http://localhost:8000/doctors?lpu_id=3&specialty_id=92140679"
 ```
 
 Example Response:
 ```json
+[
+  {
+    "id": "2229",
+    "name": "Абдурахимова Эсмира Гасановна",
+    "freeParticipantCount": 30,
+    "freeTicketCount": 30,
+    "lastDate": "2026-01-16T15:18:00",
+    "nearestDate": "2026-01-15T16:33:00",
+    "ariaNumber": "10, 18, 19"
+  }
+]
 ```
 
 #### 5. Get Doctor Appointments
 ```bash
-curl "http://localhost:8000/appointments?lpu_id=42&doctor_id=doctor-12345"
+curl "http://localhost:8000/appointments?lpu_id=3&doctor_id=2229"
 ```
 
 Example Response:
 ```json
+[
+  {
+    "id": "20735418",
+    "visitStart": "2026-01-15T16:33:00",
+    "visitEnd": "2026-01-15T16:44:00",
+    "room": "218/ПО 88 к.2"
+  }
+]
 ```
 
 #### 6. Parse Gorzdrav URL
@@ -142,7 +183,7 @@ from pprint import pprint
 
 async def fetch_data():
     async with httpx.AsyncClient(base_url="http://localhost:8000") as client:
-        # Get districts
+        # Get 
         response = await client.get("/districts")
         districts = response.json()
         pprint(districts)
