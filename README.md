@@ -37,10 +37,6 @@ Built with `httpx` and `pydantic` for optimal asynchronous performance and type-
 
 ---
 
-## 📦 Installation
-
-TODO
-
 ## gorzdrav API Documentation
 
 ### Configuration
@@ -48,10 +44,6 @@ Edit `config.py` for:
 - API connection parameters
 - Server settings
 - Pool size and queue limits
-
-### Running the Server
-
-TODO
 
 ## API Documentation
 
