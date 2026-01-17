@@ -135,13 +135,8 @@ Example Response:
 
 #### 5. Get Doctor Appointments
 ```bash
-<<<<<<< HEAD
 curl "http://localhost:8000/appointments?lpu_id=42&doctor_id=doctor-12345"
 ``` 
-=======
-curl "http://localhost:8000/appointments?lpu_id=3&doctor_id=2229"
-```
->>>>>>> 88c1b30dca5c5cf618c88f6f998c19c29dd806a5
 
 Example Response:
 ```json
