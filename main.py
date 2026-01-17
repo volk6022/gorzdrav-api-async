@@ -62,11 +62,7 @@ async def lifespan(app: FastAPI):
         ttl=Config.CACHE_TTL,
         namespace="gorzdrav"
     )
-<<<<<<< HEAD
     # REMOVED: await cache.init() - SimpleMemoryCache does not need/have async init
-=======
-    # await cache.init()
->>>>>>> 88c1b30dca5c5cf618c88f6f998c19c29dd806a5
 
     yield
     
