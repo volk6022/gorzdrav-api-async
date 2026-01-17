@@ -2,10 +2,12 @@ from contextlib import asynccontextmanager
 from fastapi import FastAPI, HTTPException
 import uvicorn
 import asyncio
+import json
 from typing import Dict, Any, Optional, Callable, Awaitable, List
 from pydantic import BaseModel
 from aiocache import Cache
 from aiocache.serializers import JsonSerializer
+from datetime import datetime, date
 
 # Importing your existing components
 from src.gorzdrav.async_client import AsyncGorzdrav
@@ -16,6 +18,32 @@ from src.config import Config
 # Initialize client pool
 pool = None
 cache = None
+
+
+# class PydanticJsonSerializer(JsonSerializer):
+#     """Custom serializer that handles Pydantic models"""
+#     def dumps(self, value):
+#         from pydantic import BaseModel
+#         def default_converter(o):
+#             if isinstance(o, BaseModel):
+#                 return o.model_dump()
+#             raise TypeError(f"Object of type {o.__class__.__name__} is not JSON serializable")
+#         return json.dumps(value, default=default_converter)
+
+class PydanticJsonSerializer(JsonSerializer):
+    """Custom serializer that handles Pydantic models and datetime/date"""
+    def dumps(self, value):
+        from pydantic import BaseModel
+        
+        def default_converter(o):
+            if isinstance(o, BaseModel):
+                return o.model_dump()
+            elif isinstance(o, (datetime, date)):
+                return o.isoformat()
+            raise TypeError(f"Object of type {o.__class__.__name__} is not JSON serializable")
+            
+        return json.dumps(value, default=default_converter)
+
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
@@ -29,11 +57,16 @@ async def lifespan(app: FastAPI):
 
     cache = Cache(
         Cache.MEMORY,
-        serializer=JsonSerializer(),
+        # serializer=JsonSerializer(),
+        serializer=PydanticJsonSerializer(),
         ttl=Config.CACHE_TTL,
         namespace="gorzdrav"
     )
+<<<<<<< HEAD
     # REMOVED: await cache.init() - SimpleMemoryCache does not need/have async init
+=======
+    # await cache.init()
+>>>>>>> 88c1b30dca5c5cf618c88f6f998c19c29dd806a5
 
     yield
     
@@ -164,6 +197,11 @@ async def cached_handler(
     return result
 
 
+class AppointmentLinkResponse(BaseModel):
+    """Response model for generated appointment links"""
+    url: str
+
+
 # ===== API Endpoints =====
 
 
@@ -273,6 +311,32 @@ async def get_appointments(lpu_id: int, doctor_id: str):
         raise HTTPException(
             status_code=400,
             detail={"error": "API Error", "code": e.errorCode, "detail": e.message}
+        )
+
+
+@app.get("/generate-link",
+         response_model=AppointmentLinkResponse,
+         responses={400: {"model": ErrorResponse}})
+async def generate_appointment_link(
+    district_id: str,
+    lpu_id: int,
+    specialty_id: str,
+    doctor_id: str
+):
+    """Generate direct appointment URL for booking"""
+    try:
+        return {
+            "url": AsyncGorzdrav.generate_link(
+                districtId=district_id,
+                lpuId=lpu_id,
+                specialtyId=specialty_id,
+                scheduleId=doctor_id  # Doctor ID serves as schedule ID in URLs
+            )
+        }
+    except Exception as e:
+        raise HTTPException(
+            status_code=400,
+            detail={"error": "URL Generation Error", "detail": str(e)}
         )
 
 
