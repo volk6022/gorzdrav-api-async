@@ -111,7 +111,7 @@ Example Response:
 #### 5. Get Doctor Appointments
 ```bash
 curl "http://localhost:8000/appointments?lpu_id=42&doctor_id=doctor-12345"
-```
+``` 
 
 Example Response:
 ```json
